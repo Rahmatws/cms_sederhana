@@ -11,85 +11,120 @@ if (!isset($_SESSION['user_id'])) {
 // Get all posts
 $stmt = $pdo->query("SELECT * FROM posts ORDER BY created_at DESC");
 $posts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Get total posts count
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM posts");
+$total_posts = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Get total categories count
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM categories");
+$total_categories = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// Get total users count
+$stmt = $pdo->query("SELECT COUNT(*) as total FROM users");
+$total_users = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+include 'header.php';
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - CMS Sederhana</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">CMS Sederhana - Dashboard</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="logout.php">Logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-3">
-                <div class="list-group">
-                    <a href="dashboard.php" class="list-group-item list-group-item-action active">Dashboard</a>
-                    <a href="posts.php" class="list-group-item list-group-item-action">Kelola Post</a>
-                    <a href="categories.php" class="list-group-item list-group-item-action">Kelola Kategori</a>
-                    <a href="users.php" class="list-group-item list-group-item-action">Kelola User</a>
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <div class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Dashboard</h1>
                 </div>
             </div>
-            <div class="col-md-9">
-                <div class="card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Daftar Post</h5>
-                        <a href="create_post.php" class="btn btn-primary btn-sm">Tambah Post Baru</a>
+        </div>
+    </div>
+    <!-- /.content-header -->
+
+    <!-- Main content -->
+    <div class="content">
+        <div class="container-fluid">
+            <!-- Info boxes -->
+            <div class="row">
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-info elevation-1"><i class="fas fa-file-alt"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Posts</span>
+                            <span class="info-box-number"><?php echo $total_posts; ?></span>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <?php if (empty($posts)): ?>
-                            <p>Belum ada post yang dibuat.</p>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table">
-                                    <thead>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-success elevation-1"><i class="fas fa-tags"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Categories</span>
+                            <span class="info-box-number"><?php echo $total_categories; ?></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 col-md-4">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-warning elevation-1"><i class="fas fa-users"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">Total Users</span>
+                            <span class="info-box-number"><?php echo $total_users; ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main row -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Recent Posts</h3>
+                            <div class="card-tools">
+                                <a href="create_post.php" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-plus"></i> New Post
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                            <table class="table table-hover text-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (empty($posts)): ?>
                                         <tr>
-                                            <th>Judul</th>
-                                            <th>Tanggal</th>
-                                            <th>Aksi</th>
+                                            <td colspan="3" class="text-center">No posts found</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
+                                    <?php else: ?>
                                         <?php foreach ($posts as $post): ?>
                                             <tr>
                                                 <td><?php echo htmlspecialchars($post['title']); ?></td>
                                                 <td><?php echo date('d/m/Y', strtotime($post['created_at'])); ?></td>
                                                 <td>
-                                                    <a href="edit_post.php?id=<?php echo $post['id']; ?>" class="btn btn-sm btn-warning">Edit</a>
-                                                    <a href="delete_post.php?id=<?php echo $post['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus post ini?')">Hapus</a>
+                                                    <a href="edit_post.php?id=<?php echo $post['id']; ?>" class="btn btn-warning btn-sm">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </a>
+                                                    <a href="delete_post.php?id=<?php echo $post['id']; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this post?')">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </a>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html> 
+<?php include 'footer.php'; ?> 

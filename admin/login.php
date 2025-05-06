@@ -2,21 +2,61 @@
 session_start();
 require_once '../config/database.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+// Flash message
+$flash = '';
+if (isset($_SESSION['flash'])) {
+    $flash = $_SESSION['flash'];
+    unset($_SESSION['flash']);
+}
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->execute([$username]);
+// Remember Me: check cookie
+if (isset($_COOKIE['rememberme']) && !isset($_SESSION['user_id'])) {
+    $user_id = $_COOKIE['rememberme'];
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
     $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password'])) {
+    if ($user) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
+        $_SESSION['role'] = $user['role'];
+        $_SESSION['flash'] = 'Login berhasil!';
         header('Location: dashboard.php');
         exit();
+    }
+}
+
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
+    $role = $_POST['role'];
+    $remember = isset($_POST['remember']);
+
+    if (empty($username) || empty($password) || empty($role)) {
+        $error = "Semua field harus diisi.";
     } else {
-        $error = "Username atau password salah!";
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch();
+        if (!$user) {
+            $error = "Username tidak ditemukan.";
+        } elseif ($user['role'] !== $role) {
+            $error = "Role tidak sesuai dengan akun.";
+        } elseif (!password_verify($password, $user['password'])) {
+            $error = "Password salah.";
+        } else {
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
+            if ($remember) {
+                setcookie('rememberme', $user['id'], time() + (86400 * 30), "/"); // 30 hari
+            } else {
+                setcookie('rememberme', '', time() - 3600, "/");
+            }
+            $_SESSION['flash'] = 'Login berhasil!';
+            header('Location: dashboard.php');
+            exit();
+        }
     }
 }
 ?>
@@ -24,43 +64,151 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CMS Sederhana</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MyCMS Rahmat | Login</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <style>
+        .login-logo img { max-width: 80px; margin-bottom: 10px; }
+        .dark-mode .login-card-body, .dark-mode .card { background: #222 !important; color: #fff; }
+        .dark-mode .form-control { background: #333 !important; color: #fff; }
+        .dark-mode .input-group-text { background: #333 !important; color: #fff; }
+        .dark-mode .alert { background: #333; color: #fff; border-color: #444; }
+        .dark-mode .btn-primary { background: #444; border-color: #444; }
+        .dark-mode .icheck-primary label { color: #fff; }
+        .dark-toggle { position: absolute; top: 20px; right: 20px; z-index: 10; }
+        @media (max-width: 576px) {
+            .login-box { width: 95vw; margin: 1rem auto; }
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container">
-        <div class="row justify-content-center mt-5">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="text-center">Login Admin</h3>
-                    </div>
-                    <div class="card-body">
-                        <?php if (isset($error)): ?>
-                            <div class="alert alert-danger"><?php echo $error; ?></div>
-                        <?php endif; ?>
-                        
-                        <form method="POST">
-                            <div class="form-group">
-                                <label for="username">Username</label>
-                                <input type="text" class="form-control" id="username" name="username" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="password">Password</label>
-                                <input type="password" class="form-control" id="password" name="password" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">Login</button>
-                        </form>
+<body class="hold-transition login-page">
+<button class="btn btn-sm btn-secondary dark-toggle" id="toggleDark"><i class="fas fa-moon"></i> <span id="darkLabel">Dark</span></button>
+<div class="login-box">
+    <div class="login-logo">
+        <!-- Logo bisa diganti dengan <img src="logo.png" alt="Logo"> -->
+        <span style="font-size:2rem;font-weight:bold;">MyCMS <span style="color:#007bff">Rahmat</span></span>
+    </div>
+    <!-- /.login-logo -->
+    <div class="card">
+        <div class="card-body login-card-body">
+            <p class="login-box-msg">Sign in to start your session</p>
+
+            <?php if (!empty($flash)): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <?php echo $flash; ?>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            <?php endif; ?>
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <?php echo $error; ?>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" id="loginForm" autocomplete="off">
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" name="username" id="username" placeholder="Username" required>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-user"></span>
+                        </div>
                     </div>
                 </div>
-            </div>
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control" name="password" id="password" placeholder="Password" required>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="input-group mb-3">
+                    <select name="role" id="role" class="form-control" required>
+                        <option value="">-- Pilih Role --</option>
+                        <option value="admin">Admin</option>
+                        <option value="editor">Editor</option>
+                        <option value="penulis">Penulis</option>
+                        <option value="viewer">Viewer</option>
+                    </select>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-users"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-8">
+                        <div class="icheck-primary">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Remember Me</label>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
+                            <span id="loginText">Sign In</span>
+                            <span id="loginSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+            <p class="mb-1 text-center">
+                <a href="#" onclick="alert('Fitur lupa password belum tersedia.'); return false;">Lupa Password?</a>
+            </p>
         </div>
+        <!-- /.login-card-body -->
     </div>
+</div>
+<!-- /.login-box -->
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script>
+// Client-side validation & loading spinner
+$(function() {
+    $('#loginForm').on('submit', function(e) {
+        var username = $('#username').val().trim();
+        var password = $('#password').val();
+        var role = $('#role').val();
+        if (username === '' || password === '' || role === '') {
+            alert('Username, password, dan role harus diisi!');
+            e.preventDefault();
+            return false;
+        }
+        $('#loginBtn').attr('disabled', true);
+        $('#loginText').text('Loading...');
+        $('#loginSpinner').removeClass('d-none');
+    });
+
+    // Dark mode toggle
+    if (localStorage.getItem('darkmode') === '1') {
+        $('body').addClass('dark-mode');
+        $('#darkLabel').text('Light');
+        $('#toggleDark i').removeClass('fa-moon').addClass('fa-sun');
+    }
+    $('#toggleDark').on('click', function() {
+        $('body').toggleClass('dark-mode');
+        var isDark = $('body').hasClass('dark-mode');
+        $('#darkLabel').text(isDark ? 'Light' : 'Dark');
+        $('#toggleDark i').toggleClass('fa-moon fa-sun');
+        localStorage.setItem('darkmode', isDark ? '1' : '0');
+    });
+});
+</script>
 </body>
 </html> 
