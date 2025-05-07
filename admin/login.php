@@ -48,6 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
+            // Log login
+            $stmtLog = $pdo->prepare("INSERT INTO logins (user_id) VALUES (?)");
+            $stmtLog->execute([$user['id']]);
             if ($remember) {
                 setcookie('rememberme', $user['id'], time() + (86400 * 30), "/"); // 30 hari
             } else {

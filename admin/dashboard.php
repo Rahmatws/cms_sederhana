@@ -28,16 +28,20 @@ $total_users = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 $stmt = $pdo->query("SELECT role, COUNT(*) as total FROM users GROUP BY role");
 $role_counts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Simulasi data chart postingan per bulan
-$chart_months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-$chart_posts = [2, 3, 1, 5, 2, 4, 3, 2, 1, 0, 0, 0];
+// Statistik postingan per bulan (tahun berjalan)
+$year = date('Y');
+$chart_months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+$chart_posts = array_fill(0, 12, 0);
+$stmt = $pdo->prepare("SELECT MONTH(created_at) as m, COUNT(*) as total FROM posts WHERE YEAR(created_at)=? GROUP BY m");
+$stmt->execute([$year]);
+foreach ($stmt as $row) {
+    $chart_posts[$row['m']-1] = (int)$row['total'];
+}
 
-// Simulasi recent activity
-$recent_activity = [
-    ['time' => '09:00', 'desc' => 'Admin login'],
-    ['time' => '09:10', 'desc' => 'Postingan "Tips Coding" dibuat'],
-    ['time' => '09:15', 'desc' => 'User baru "editor1" ditambahkan'],
-];
+// Recent logins
+$recent_logins = $pdo->query("SELECT l.login_time, u.username FROM logins l JOIN users u ON l.user_id=u.id ORDER BY l.login_time DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+// Recent posts
+$recent_posts = $pdo->query("SELECT p.title, p.created_at, u.username FROM posts p JOIN users u ON p.user_id=u.id ORDER BY p.created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
 
 // Simulasi status server
 $server_status = 'Aktif';
@@ -169,11 +173,12 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'admin';
                     <div class="card">
                         <div class="card-header"><b>Recent Activity</b></div>
                         <div class="card-body">
-                            <ul class="list-unstyled mb-0">
-                                <?php foreach ($recent_activity as $act): ?>
-                                    <li><span class="badge badge-secondary mr-2"><?php echo $act['time']; ?></span> <?php echo $act['desc']; ?></li>
-                                <?php endforeach; ?>
-                            </ul>
+                            <?php foreach ($recent_logins as $log): ?>
+                                <div><span class='badge badge-info'><?php echo date('d/m H:i', strtotime($log['login_time'])); ?></span> Login: <b><?php echo htmlspecialchars($log['username']); ?></b></div>
+                            <?php endforeach; ?>
+                            <?php foreach ($recent_posts as $post): ?>
+                                <div><span class='badge badge-success'><?php echo date('d/m H:i', strtotime($post['created_at'])); ?></span> Post: <b><?php echo htmlspecialchars($post['title']); ?></b> oleh <?php echo htmlspecialchars($post['username']); ?></div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
