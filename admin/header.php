@@ -6,6 +6,12 @@ if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
+$role = isset($_SESSION['role']) ? $_SESSION['role'] : 'viewer';
+// Redirect viewer if try to access admin
+if ($role === 'viewer' && basename($_SERVER['PHP_SELF']) !== 'dashboard.php') {
+    header('Location: dashboard.php');
+    exit();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -96,24 +102,30 @@ if (localStorage.getItem('darkmode') === '1') {
                             <p>Dashboard</p>
                         </a>
                     </li>
+                    <?php if ($role === 'admin' || $role === 'editor' || $role === 'penulis'): ?>
                     <li class="nav-item">
                         <a href="posts.php" class="nav-link">
                             <i class="nav-icon fas fa-file-alt"></i>
                             <p>Kelola Post</p>
                         </a>
                     </li>
+                    <?php endif; ?>
+                    <?php if ($role === 'admin' || $role === 'editor'): ?>
                     <li class="nav-item">
                         <a href="categories.php" class="nav-link">
                             <i class="nav-icon fas fa-tags"></i>
                             <p>Kelola Kategori</p>
                         </a>
                     </li>
+                    <?php endif; ?>
+                    <?php if ($role === 'admin'): ?>
                     <li class="nav-item">
                         <a href="users.php" class="nav-link">
                             <i class="nav-icon fas fa-users"></i>
                             <p>Kelola User</p>
                         </a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </nav>
             <!-- /.sidebar-menu -->

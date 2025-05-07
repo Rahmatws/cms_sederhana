@@ -166,6 +166,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <p class="mb-1 text-center">
                 <a href="#" onclick="alert('Fitur lupa password belum tersedia.'); return false;">Lupa Password?</a>
             </p>
+            <p class="mb-1 text-center mt-3">
+                <a href="register.php">Belum punya akun? Register</a>
+            </p>
         </div>
         <!-- /.login-card-body -->
     </div>
