@@ -153,7 +153,7 @@ $(function() {
         localStorage.setItem('darkmode', isDark ? '1' : '0');
     });
     // Logout confirmation
-    $('#logoutBtn').on('click', function(e) {
+    $('#logoutBtn').off('click').on('click', function(e) {
         e.preventDefault();
         if (confirm('Apakah Anda yakin ingin logout?')) {
             window.location.href = 'logout.php';

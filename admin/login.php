@@ -166,6 +166,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     </div>
                 </div>
             </form>
+            <div class="text-center mt-2 mb-2">
+                <a href="../index.php" class="btn btn-outline-secondary btn-block"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+            </div>
             <p class="mb-1 text-center">
                 <a href="#" onclick="alert('Fitur lupa password belum tersedia.'); return false;">Lupa Password?</a>
             </p>
