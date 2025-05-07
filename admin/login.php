@@ -78,16 +78,67 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Theme style -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
     <style>
-        .login-logo img { max-width: 80px; margin-bottom: 10px; }
-        .dark-mode .login-card-body, .dark-mode .card { background: #222 !important; color: #fff; }
-        .dark-mode .form-control { background: #333 !important; color: #fff; }
-        .dark-mode .input-group-text { background: #333 !important; color: #fff; }
-        .dark-mode .alert { background: #333; color: #fff; border-color: #444; }
+        body.login-page {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+        }
+        .login-box {
+            margin-top: 5vh;
+        }
+        .login-logo img, .login-logo .icon-circle {
+            max-width: 90px;
+            margin-bottom: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .icon-circle {
+            background: #fff;
+            border-radius: 50%;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            color: #2575fc;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+        }
+        .card {
+            border-radius: 18px;
+            box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+        }
+        .login-card-body {
+            padding: 2.2rem 2rem 1.5rem 2rem;
+        }
+        .btn-primary, .btn-outline-secondary {
+            transition: 0.2s;
+        }
+        .btn-primary:hover, .btn-outline-secondary:hover {
+            transform: translateY(-2px) scale(1.04);
+            box-shadow: 0 2px 12px rgba(37,117,252,0.15);
+        }
+        .dark-mode body.login-page {
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+        }
+        .dark-mode .card {
+            background: #232526 !important;
+            color: #fff;
+        }
+        .dark-mode .login-card-body {
+            background: #232526 !important;
+            color: #fff;
+        }
+        .dark-mode .form-control, .dark-mode .input-group-text {
+            background: #333 !important;
+            color: #fff !important;
+        }
         .dark-mode .btn-primary { background: #444; border-color: #444; }
-        .dark-mode .icheck-primary label { color: #fff; }
-        .dark-toggle { position: absolute; top: 20px; right: 20px; z-index: 10; }
+        .dark-mode .btn-outline-secondary { background: #232526; color: #fff; border-color: #fff; }
+        .dark-mode .btn-outline-secondary:hover { background: #444; color: #fff; }
         @media (max-width: 576px) {
             .login-box { width: 95vw; margin: 1rem auto; }
+            .login-card-body { padding: 1.2rem 0.7rem 1rem 0.7rem; }
         }
     </style>
 </head>
@@ -96,7 +147,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="login-box">
     <div class="login-logo">
         <!-- Logo bisa diganti dengan <img src="logo.png" alt="Logo"> -->
-        <span style="font-size:2rem;font-weight:bold;">MyCMS <span style="color:#007bff">Rahmat</span></span>
+        <span class="icon-circle mb-2"><i class="fas fa-user-shield"></i></span>
+        <span style="font-size:2rem;font-weight:bold;letter-spacing:1px;">MyCMS <span style="color:#007bff">Rahmat</span></span>
     </div>
     <!-- /.login-logo -->
     <div class="card">

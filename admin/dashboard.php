@@ -88,8 +88,14 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'admin';
                         <a href="categories.php" class="btn btn-outline-warning btn-lg"><i class="fas fa-tags"></i> Kategori</a>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <input type="text" class="form-control" id="searchPost" placeholder="🔍 Cari Postingan...">
+                <div class="col-md-4 position-relative">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="searchPost" placeholder="🔍 Cari Postingan..." autocomplete="off">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button" id="btnSearchPost"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div id="searchResult" class="list-group position-absolute w-100" style="z-index:1000; display:none;"></div>
                 </div>
             </div>
 
@@ -281,12 +287,40 @@ new Chart(ctxRole, {
         plugins: { legend: { position: 'bottom' } }
     }
 });
-// Search filter for posts
-$('#searchPost').on('keyup', function() {
-    var value = $(this).val().toLowerCase();
-    $('#postsTable tbody tr').filter(function() {
-        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+// Autocomplete search post AJAX
+function doSearchPost() {
+    var query = $('#searchPost').val().trim();
+    if (query.length === 0) {
+        $('#searchResult').hide().empty();
+        return;
+    }
+    $.get('search_post_ajax.php', {q: query}, function(data) {
+        var res = JSON.parse(data);
+        var html = '';
+        if (res.length > 0) {
+            res.forEach(function(post) {
+                html += '<a href="post_detail.php?id='+post.id+'" class="list-group-item list-group-item-action" target="_blank">'+post.title+'</a>';
+            });
+        } else {
+            html = '<div class="list-group-item text-danger">Postingan Tidak ditemukan</div>';
+        }
+        $('#searchResult').html(html).show();
     });
+}
+$('#searchPost').on('input', doSearchPost);
+$('#btnSearchPost').on('click', doSearchPost);
+$('#searchPost').on('keydown', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        doSearchPost();
+        $('#searchResult').show();
+    }
+});
+$('#searchPost').on('blur', function() {
+    setTimeout(function() { $('#searchResult').hide(); }, 200);
+});
+$('#searchPost').on('focus', function() {
+    if ($('#searchResult').children().length > 0) $('#searchResult').show();
 });
 </script>
 
