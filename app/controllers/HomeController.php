@@ -9,16 +9,6 @@ class HomeController extends Controller {
         $postModel = new Post();
         $posts = $postModel->getAllPosts();
         
-        // This will be replaced by rendering a view in the next commit
-        echo "<h1>Daftar Postingan</h1>";
-        if (empty($posts)) {
-            echo "<p>Belum ada artikel yang diposting.</p>";
-        } else {
-            foreach ($posts as $post) {
-                echo "<h2>" . htmlspecialchars($post['title']) . "</h2>";
-                echo "<p>" . htmlspecialchars(substr($post['content'], 0, 200)) . "...</p>";
-                echo "<p><a href=\"/post/" . $post['id'] . "\">Baca Selengkapnya</a></p>";
-            }
-        }
+        $this->view('home/index', ['posts' => $posts]);
     }
 } 

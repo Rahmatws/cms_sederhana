@@ -9,16 +9,7 @@ class PostController extends Controller {
         $postModel = new Post();
         $post = $postModel->getPostById($id);
         
-        // This will be replaced by rendering a view in the next commit
-        if ($post) {
-            echo "<h1>" . htmlspecialchars($post['title']) . "</h1>";
-            echo "<p>" . nl2br(htmlspecialchars($post['content'])) . "</p>";
-            echo "<p>Diposting pada: " . date('d F Y', strtotime($post['created_at'])) . "</p>
-";
-        } else {
-            // Handle post not found (will be improved later)
-            echo "<p>Postingan tidak ditemukan.</p>";
-        }
+        $this->view('post/show', ['post' => $post]);
     }
 
     // Methods for admin post management (index, create, edit, delete) will be added later
