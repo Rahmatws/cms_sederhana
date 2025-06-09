@@ -10,6 +10,8 @@ Core\Autoloader::register();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+session_start();
+
 try {
     // Initialize router
     $router = new Core\Router();
@@ -23,6 +25,8 @@ try {
     $router->add('admin/posts/create', 'PostController', 'create');
     $router->add('admin/posts/edit/{id}', 'PostController', 'edit');
     $router->add('admin/posts/delete/{id}', 'PostController', 'delete');
+    $router->add('admin/posts/create', 'PostController', 'store');
+    $router->add('admin/posts/edit/{id}', 'PostController', 'update');
     
     // Dispatch the route
     $router->dispatch();
