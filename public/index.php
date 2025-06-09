@@ -7,8 +7,9 @@ require_once BASE_PATH . '/core/Autoloader.php';
 Core\Autoloader::register();
 
 // Error handling
-error_reporting(E_ALL);
 ini_set('display_errors', 1);
+error_reporting(E_ALL);
+echo 'index.php loaded<br>';
 
 session_start();
 
