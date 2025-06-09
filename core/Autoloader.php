@@ -10,8 +10,11 @@ class Autoloader {
             
             // If the file exists, require it
             if (file_exists($file)) {
+                echo "<pre>Autoloading: $file</pre>";
                 require $file;
                 return true;
+            } else {
+                echo "<pre>File not found for class: $class, path: $file</pre>";
             }
             return false;
         });

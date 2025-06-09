@@ -6,6 +6,7 @@ use App\Models\Post;
 
 class HomeController extends Controller {
     public function index() {
+        echo "HomeController index loaded<br>";
         $postModel = new Post();
         $posts = $postModel->getAllPosts();
         

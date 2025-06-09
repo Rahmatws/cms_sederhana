@@ -18,7 +18,7 @@ class Router {
         
         // If URL is empty, set to default route
         if (empty($url)) {
-            $url = 'home/index';
+            $url = '';
         }
 
         // Check if route exists
@@ -46,7 +46,9 @@ class Router {
 
         // Create controller instance
         $controllerClass = "App\\Controllers\\{$controller}";
+        echo "<pre>Trying to load controller: $controllerClass</pre>";
         if (!class_exists($controllerClass)) {
+            echo "<pre>Controller class not found: $controllerClass</pre>";
             throw new \Exception("Controller not found: {$controller}", 404);
         }
 
