@@ -15,7 +15,13 @@ class Router {
 
     public function dispatch() {
         $url = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-        
+        // Perbaikan: Hilangkan path ke /public jika ada
+        $base = trim(dirname($_SERVER['SCRIPT_NAME']), '/');
+        if ($base && strpos($url, $base) === 0) {
+            $url = substr($url, strlen($base));
+            $url = ltrim($url, '/');
+        }
+        echo "<pre>REQUEST_URI: {$_SERVER['REQUEST_URI']}\nSCRIPT_NAME: {$_SERVER['SCRIPT_NAME']}\nBase: $base\nURL after fix: $url</pre>";
         // If URL is empty, set to default route
         if (empty($url)) {
             $url = '';
